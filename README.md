@@ -12,10 +12,13 @@ All methods have been added inline to the Application class. (/src/com/sanoy/Cal
 
 ##Instructions
 
-1. Create a Spring boot application in Spring Tool Suite. Select the Web, Thymeleaf, JPA, HSQLDB dependancies. 
+#### 1. Create a Spring boot application in Spring Tool Suite
 
+Select the Web, Thymeleaf, JPA, HSQLDB dependancies. 
 
-2. Add Support for web mvc and thymeleaf to the pom.xml file (if they don't already exist from the step above)
+#### 2. Add Support for web mvc and thymeleaf to the pom.xml file
+
+if they don't already exist from the step above
 
 ``` xml
 	<dependency>
@@ -28,14 +31,14 @@ All methods have been added inline to the Application class. (/src/com/sanoy/Cal
 	</dependency>
 ```
 
-3. Turn off thymeleaf caching so that changes to html files will reload 
+####3. Turn off thymeleaf caching so that changes to html files will reload 
 
 add the following line to the application.properties file. (/src/main/application.properties)
 
 ``` javascript
 spring.thymeleaf.cache=false	
 ```
-4. And a thymeleaf index.html to thymeleaf templates  (/src/main/resources/templates)
+####4. And a thymeleaf index.html to thymeleaf templates  (/src/main/resources/templates)
 
 ```html
 <!DOCTYPE html SYSTEM "http://www.thymeleaf.org/dtd/xhtml1-strict-thymeleaf-spring4-4.dtd">
@@ -50,7 +53,7 @@ Hello World!
 </html>
 ```
 
-5. Add a controller for the index.html file
+####5. Add a controller for the index.html file
 
 ``` java
 @Controller	
@@ -63,7 +66,7 @@ class CalendarController {
 }
 ```
 
-6.	Create JPA Entity for an event
+####6. Create JPA Entity for an event
 
 ``` java
 @Entity
@@ -79,14 +82,14 @@ class Event {
 	private Date end;
 }
 ```
-7.	Build the repository
+####7. Build the repository
 
 ``` java
 interface EventRepository extends  CrudRepository<Event, Long> {
     List<Event> findAll();
 }
 ```	
-8. Add Hibernate libraries to pom.xml
+####8. Add Hibernate libraries to pom.xml
 
 ``` xml
 		<dependency>
@@ -115,7 +118,7 @@ interface EventRepository extends  CrudRepository<Event, Long> {
 			<artifactId>hibernate-validator</artifactId>
 		</dependency>
 ```	
-9.	Add import.sql with events to the /src/main/resources
+####9.	Add import.sql with events to the /src/main/resources
 
 ``` javascript
 	
@@ -126,7 +129,7 @@ insert into event(id, title, start, end, description) values (4, 'event4', '2015
 
 ```
 	
-10.	Build the Rest controller to provide a list of Events
+####10.	Build the Rest controller to provide a list of Events
 
 ``` java
 @RestController
@@ -142,7 +145,7 @@ class EventController {
 }
 ```
 
-11. 	Add the webjars for fullcalendar, moment, jquery to the pom.xml file. 
+####11. 	Add the webjars for fullcalendar, moment, jquery to the pom.xml file. 
 
 ``` xml
 		<dependency>
@@ -167,7 +170,7 @@ class EventController {
 		</dependency>
 ```
 
-12.	Add the calendar.html file.
+####12.	Add the calendar.html file.
 
 ``` html
 
@@ -281,7 +284,7 @@ $(document).ready(function() {
 </html>
 ```
 
-13. Change the js code within the calendar.html file to load the Events from the rest interface. 
+####13. Change the js code within the calendar.html file to load the Events from the rest interface. 
 
 ``` javascript
 	$('#calendar').fullCalendar({
