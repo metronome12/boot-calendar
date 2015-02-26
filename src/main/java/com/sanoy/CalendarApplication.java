@@ -92,7 +92,6 @@ class Event {
 	}
 	public Event() {
 		super();
-		// TODO Auto-generated constructor stub
 	}
 	@Override
 	public String toString() {
