@@ -2,7 +2,7 @@
 
 ##Description
 
-This is a demonstration of the spring-boot framework. This example shows how to build a spring-boot calendar web application with the fullcalendar.js and jQuery libraries. The web application persists Event data with JPA and hibernate and supplies a rest interface for retrieving Event objects from the web server and displaying those Events in a browser calendar.  
+This short demonstration of the spring-boot micro framework. This example shows how to build a spring-boot calendar web application with the fullcalendar.js and jQuery libraries. The web application persists Event data with JPA and hibernate and supplies a rest interface for retrieving Event objects from the web server and displaying them in a browser calendar.  
 
 ##Prerequists
 
