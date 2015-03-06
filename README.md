@@ -401,6 +401,7 @@ class BadDateFormatException extends RuntimeException {
 
 Specifying table and column names will enable the @Query annotation contained in the EventRepository to access those parameters by name. 
 
+``` java
 @Entity
 @Table(name = "Event")
 class Event {
@@ -414,9 +415,10 @@ class Event {
 ...
 
 }
-
+```
 #### 17. Add crud operations to the CrudRepository object
 
+``` java
 interface EventRepository extends CrudRepository<Event, Long> {
 	List<Event> findAll();
 	Event save(Event event);
@@ -426,9 +428,11 @@ interface EventRepository extends CrudRepository<Event, Long> {
 	         "where b.start between ?1 and ?2 and b.end between ?1 and ?2")
 	 List<Event> findByDatesBetween(Date start, Date end);
 }
+```
 
 #### 18. Add crud operations for events (create, read, update, delete)
 
+``` java
 @RequestMapping(value="/event", method=RequestMethod.POST)
 public Event addEvent(@RequestBody Event event) {
 	Event created = eventRepository.save(event);
@@ -444,6 +448,6 @@ public Event updateEvent(@RequestBody Event event) {
 public void removeEvent(@RequestBody Event event) {
 	eventRepository.delete(event);
 }
-
+```
 #### 19. Add the javascript code to call the CRUD functions. (see the jsoncalendar.html file for more info)
 
