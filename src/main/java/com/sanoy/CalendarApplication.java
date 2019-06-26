@@ -2,23 +2,27 @@ package com.sanoy;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Date;
 import java.util.List;
 
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.CrudRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
+import org.springframework.stereotype.Repository;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -35,96 +39,135 @@ public class CalendarApplication {
     }
 }
 
-@Controller 
+@Controller
 class CalendarController {
 	
-	@RequestMapping(value="/", method=RequestMethod.GET)
+	@Autowired
+	private EventJpaRepository eventRepository; 
+	
+	@RequestMapping(value="/", method=RequestMethod.GET) 
 	public ModelAndView index() {
+		return new ModelAndView("index");
+	}
+	
+	@RequestMapping(value="/staticcalendar", method=RequestMethod.GET) 
+	public ModelAndView staticcalendar() {
+		return new ModelAndView("staticcalendar");
+	}
+	
+	@RequestMapping(value="/calendar", method=RequestMethod.GET) 
+	public ModelAndView calendar() {
+		return new ModelAndView("calendar");
+	}
+	
+	@RequestMapping(value="/jsoncalendar", method=RequestMethod.GET) 
+	public ModelAndView jsoncalendar() {
 		return new ModelAndView("jsoncalendar");
 	}
 	
+	@RequestMapping(value="/eventlist", method=RequestMethod.GET) 
+	public String events(HttpServletRequest request, Model model) {
+		model.addAttribute("events", eventRepository.findAll());
+		return "events";
+	}
 }
 
 @Entity
-@Table(name = "Event")
+@Table(name="event")
 class Event {
 	
-	@Id
-	@GeneratedValue(strategy=GenerationType.AUTO)
+	@Id 
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 	
-	private String title;
-	private String description; 
+	private String title; 
+	private String description;
+	private LocalDateTime start; 
+	private LocalDateTime finish;
 	
-	@Column(name="start")
-	private Date start;
+	public Event(Long id, String title, String description, LocalDateTime start, LocalDateTime finish) {
+		super();
+		this.id = id;
+		this.title = title;
+		this.description = description;
+		this.start = start;
+		this.finish = finish;
+	}
 	
-	@Column(name="end")
-	private Date end;
-	
+	public Event() {
+		super();
+		// TODO Auto-generated constructor stub
+	}
+
 	public Long getId() {
 		return id;
 	}
+
 	public void setId(Long id) {
 		this.id = id;
 	}
+
 	public String getTitle() {
 		return title;
 	}
+
 	public void setTitle(String title) {
 		this.title = title;
 	}
+
 	public String getDescription() {
 		return description;
 	}
+
 	public void setDescription(String description) {
 		this.description = description;
 	}
-	public Date getStart() {
+
+	public LocalDateTime getStart() {
 		return start;
 	}
-	public void setStart(Date start) {
+
+	public void setStart(LocalDateTime start) {
 		this.start = start;
 	}
-	public Date getEnd() {
-		return end;
+
+	public LocalDateTime getFinish() {
+		return finish;
 	}
-	public void setEnd(Date end) {
-		this.end = end;
+
+	public void setFinish(LocalDateTime finish) {
+		this.finish = finish;
 	}
-	public Event(Long id, String title, String description, Date start, Date end) {
-		super();
-		this.id = id;
-		this.title = title;
-		this.description = description;
-		this.start = start;
-		this.end = end;
-	}
-	public Event() {
-		super();
-	}
+
 	@Override
 	public String toString() {
-		return "Event [id=" + id + ", title=" + title + ", description="
-				+ description + ", start=" + start + ", end=" + end + "]";
-	}
+		return "Event [id=" + id + ", title=" + title + ", description=" + description + ", start=" + start
+				+ ", finish=" + finish + "]";
+	} 	
 }
 
-interface EventRepository extends CrudRepository<Event, Long> {
-	List<Event> findAll();
-	Event save(Event event);
-	void delete(Event event);
 
-	@Query("select b from Event b " +
-	         "where b.start between ?1 and ?2 and b.end between ?1 and ?2")
-	 List<Event> findByDatesBetween(Date start, Date end);
+@Repository
+interface EventJpaRepository extends JpaRepository<Event, Long> {
+	
+	/* Note these two methods do the same thing.  The @Repository annotation handles both*/
+	
+	
+	/* This one uses a JPQL */
+	public List<Event> findByStartGreaterThanEqualAndFinishLessThanEqual(LocalDateTime start, LocalDateTime end);
+	
+	
+	/* This one uses an @Query */
+	@Query("select b from Event b where b.start >= ?1 and b.finish <= ?2")
+	public List<Event> findByDateBetween(LocalDateTime start, LocalDateTime end);
+	
 }
 
 @RestController 
 class EventController {
 	
 	@Autowired
-	EventRepository eventRepository;
+	private EventJpaRepository eventRepository;
 	
 	@RequestMapping(value="/allevents", method=RequestMethod.GET)
 	public List<Event> allEvents() {
@@ -136,12 +179,12 @@ class EventController {
 		Event created = eventRepository.save(event);
 		return created; 
 	}
-	
+
 	@RequestMapping(value="/event", method=RequestMethod.PATCH)
 	public Event updateEvent(@RequestBody Event event) {
 		return eventRepository.save(event);
 	}
-	
+
 	@RequestMapping(value="/event", method=RequestMethod.DELETE)
 	public void removeEvent(@RequestBody Event event) {
 		eventRepository.delete(event);
@@ -166,9 +209,14 @@ class EventController {
 			throw new BadDateFormatException("bad end date: " + end);
 		}
 		
-		return eventRepository.findByDatesBetween(startDate, endDate); 
+		LocalDateTime startDateTime = LocalDateTime.ofInstant(startDate.toInstant(),
+                ZoneId.systemDefault());
+		
+		LocalDateTime endDateTime = LocalDateTime.ofInstant(endDate.toInstant(),
+                ZoneId.systemDefault());
+		
+		return eventRepository.findByDateBetween(startDateTime, endDateTime); 
 	}
-	
 }
 
 @ResponseStatus(HttpStatus.BAD_REQUEST)
