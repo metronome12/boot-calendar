@@ -8,9 +8,21 @@ This short demonstration of the spring-boot micro framework. This example shows 
 
 This project uses Spring Tool Suite for development with spring-boot installed. 
 
-All methods have been added inline to the Application class. (/src/com/sanoy/CalendarApplication)
+All methods have been added inline to the Application file. (/src/com/sanoy/CalendarApplication)
 
 ## Instructions
+
+### Install Spring Dev tools
+
+Spring dev tools will detect when you've made changes to your java files and will automagically restart the server so that you don't have to continually restart the server. Add this to your pom.xml file
+``` xml
+	<dependency>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-devtools</artifactId>
+		<scope>runtime</scope>
+		<optional>true</optional>
+	</dependency>
+```
 
 #### 1. Create a Spring boot application in Spring Tool Suite
 
@@ -150,38 +162,32 @@ class Event {
 #### 7. Build the repository
 
 ``` java
-interface EventRepository extends  CrudRepository<Event, Long> {
-    List<Event> findAll();
+@Repository
+interface EventJpaRepository extends JpaRepository<Event, Long> {
+	
+	/* Note these two methods do the same thing.  The @Repository annotation handles both*/
+	
+	/* This one uses a JPQL */
+	public List<Event> findByStartGreaterThanEqualAndFinishLessThanEqual(LocalDateTime start, LocalDateTime end);
+	
+	
+	/* This one uses an @Query */
+	@Query("select b from Event b where b.start >= ?1 and b.finish <= ?2")
+	public List<Event> findByDateBetween(LocalDateTime start, LocalDateTime end);
+	
 }
 ```	
 #### 8. Add Hibernate libraries to pom.xml
 
 ``` xml
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-data-jpa</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.hibernate</groupId>
-			<artifactId>hibernate-entitymanager</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.hsqldb</groupId>
-			<artifactId>hsqldb</artifactId>
-			<scope>runtime</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-orm</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-data-jpa</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.hibernate</groupId>
-			<artifactId>hibernate-validator</artifactId>
-		</dependency>
+	<dependency>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-data-jpa</artifactId>
+	</dependency>
+	<dependency>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-data-rest</artifactId>
+	</dependency>
 ```	
 #### 9.	Add import.sql with events to the /src/main/resources
 
