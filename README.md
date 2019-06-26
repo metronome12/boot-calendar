@@ -1,16 +1,30 @@
-#boot-calendar
+# boot-calendar
 
-##Description
+## Description
 
 This short demonstration of the spring-boot micro framework. This example shows how to build a spring-boot calendar web application with the fullcalendar.js and jQuery libraries. The web application persists Event data with JPA and hibernate and supplies a rest interface for retrieving Event objects from the web server and displaying them in a browser calendar.  
 
-##Prerequists
+## Prerequists
 
 This project uses Spring Tool Suite for development with spring-boot installed. 
 
-All methods have been added inline to the Application class. (/src/com/sanoy/CalendarApplication)
+All methods have been added inline to the Application file. (/src/com/sanoy/CalendarApplication)
 
-##Instructions
+Note that the code in the repository has the end product of the work in this tutorial. 
+
+## Instructions
+
+### Install Spring Dev tools
+
+Spring dev tools will detect when you've made changes to your java files and will automagically restart the server so that you don't have to continually restart the server. Add this to your pom.xml file
+``` xml
+	<dependency>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-devtools</artifactId>
+		<scope>runtime</scope>
+		<optional>true</optional>
+	</dependency>
+```
 
 #### 1. Create a Spring boot application in Spring Tool Suite
 
@@ -31,14 +45,14 @@ if they don't already exist from the step above
 	</dependency>
 ```
 
-####3. Turn off thymeleaf caching so that changes to html files will reload 
+#### 3. Turn off thymeleaf caching so that changes to html files will reload 
 
-add the following line to the application.properties file. (/src/main/application.properties)
+add the following line to the application.properties file. (/src/main/resources/application.properties)
 
 ``` javascript
 spring.thymeleaf.cache=false	
 ```
-####4. And a thymeleaf index.html to thymeleaf templates  (/src/main/resources/templates)
+#### 4. And a thymeleaf index.html to thymeleaf templates  (/src/main/resources/templates)
 
 ```html
 <!DOCTYPE html SYSTEM "http://www.thymeleaf.org/dtd/xhtml1-strict-thymeleaf-spring4-4.dtd">
@@ -53,7 +67,9 @@ Hello World!
 </html>
 ```
 
-####5. Add a controller for the index.html file
+#### 5. Add a controller for the index.html file
+
+This controller will give you access to the html pages from a browser. Access with the following url: http://localhost:8080/
 
 ``` java
 @Controller	
@@ -66,106 +82,116 @@ class CalendarController {
 }
 ```
 
-####6. Create JPA Entity for an event
+#### 6. Create JPA Entity for an Event
+
+This entity will be used by the Java Persistence Architecture (JPA) to perform crud operations on the database. 
 
 ``` java
 @Entity
+@Table(name="event")
 class Event {
 	
-	@Id
-	@GeneratedValue(strategy=GenerationType.AUTO)
+	@Id 
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 	
-	private String title;
-	private String description; 
-	private Date start;
-	private Date end;
+	private String title; 
+	private String description;
+	private LocalDateTime start; 
+	private LocalDateTime finish;
 	
+	public Event(Long id, String title, String description, LocalDateTime start, LocalDateTime finish) {
+		super();
+		this.id = id;
+		this.title = title;
+		this.description = description;
+		this.start = start;
+		this.finish = finish;
+	}
+	
+	public Event() {
+		super();
+		// TODO Auto-generated constructor stub
+	}
+
 	public Long getId() {
 		return id;
 	}
+
 	public void setId(Long id) {
 		this.id = id;
 	}
+
 	public String getTitle() {
 		return title;
 	}
+
 	public void setTitle(String title) {
 		this.title = title;
 	}
+
 	public String getDescription() {
 		return description;
 	}
+
 	public void setDescription(String description) {
 		this.description = description;
 	}
-	public Date getStart() {
+
+	public LocalDateTime getStart() {
 		return start;
 	}
-	public void setStart(Date start) {
+
+	public void setStart(LocalDateTime start) {
 		this.start = start;
 	}
-	public Date getEnd() {
-		return end;
+
+	public LocalDateTime getFinish() {
+		return finish;
 	}
-	public void setEnd(Date end) {
-		this.end = end;
+
+	public void setFinish(LocalDateTime finish) {
+		this.finish = finish;
 	}
-	public Event(Long id, String title, String description, Date start, Date end) {
-		super();
-		this.id = id;
-		this.title = title;
-		this.description = description;
-		this.start = start;
-		this.end = end;
-	}
-	public Event() {
-		super();
-	}
+
 	@Override
 	public String toString() {
-		return "Event [id=" + id + ", title=" + title + ", description="
-				+ description + ", start=" + start + ", end=" + end + "]";
-	}
+		return "Event [id=" + id + ", title=" + title + ", description=" + description + ", start=" + start
+				+ ", finish=" + finish + "]";
+	} 	
 }
 ```
-####7. Build the repository
+#### 7. Build the repository
 
 ``` java
-interface EventRepository extends  CrudRepository<Event, Long> {
-    List<Event> findAll();
+@Repository
+interface EventJpaRepository extends JpaRepository<Event, Long> {
+	
+	/* Note these two methods do the same thing.  The @Repository annotation handles both*/
+	
+	/* This one uses a JPQL */
+	public List<Event> findByStartGreaterThanEqualAndFinishLessThanEqual(LocalDateTime start, LocalDateTime end);
+	
+	
+	/* This one uses an @Query */
+	@Query("select b from Event b where b.start >= ?1 and b.finish <= ?2")
+	public List<Event> findByDateBetween(LocalDateTime start, LocalDateTime end);
+	
 }
 ```	
-####8. Add Hibernate libraries to pom.xml
+#### 8. Add Hibernate libraries to pom.xml
 
 ``` xml
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-data-jpa</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.hibernate</groupId>
-			<artifactId>hibernate-entitymanager</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.hsqldb</groupId>
-			<artifactId>hsqldb</artifactId>
-			<scope>runtime</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-orm</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-data-jpa</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.hibernate</groupId>
-			<artifactId>hibernate-validator</artifactId>
-		</dependency>
+	<dependency>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-data-jpa</artifactId>
+	</dependency>
+	<dependency>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-data-rest</artifactId>
+	</dependency>
 ```	
-####9.	Add import.sql with events to the /src/main/resources
+#### 9.	Add import.sql with events to the /src/main/resources
 
 ``` javascript
 	
@@ -176,7 +202,7 @@ insert into event(id, title, start, end, description) values (4, 'event4', '2015
 
 ```
 	
-####10.	Build the Rest controller to provide a list of Events
+#### 10. Build the Rest controller to provide a list of Events
 
 ``` java
 @RestController
@@ -192,7 +218,7 @@ class EventController {
 }
 ```
 
-####11. 	Add the webjars for fullcalendar, moment, jquery to the pom.xml file. 
+#### 11. Add the webjars for fullcalendar, moment, jquery to the pom.xml file. 
 
 ``` xml
 		<dependency>
@@ -217,7 +243,7 @@ class EventController {
 		</dependency>
 ```
 
-####12.	Add the calendar.html file.
+#### 12. Add the calendar.html file.
 
 ``` html
 
@@ -331,20 +357,21 @@ $(document).ready(function() {
 </html>
 ```
 
-####13. Change the js code within the calendar.html file to load the Events from the rest interface. 
+#### 13. Change the js code within the calendar.html file to load the Events from the rest interface. 
 
 ``` javascript
+	$(document).ready(function() {
 	$('#calendar').fullCalendar({
 		header: {
 			left: 'prev,next today',
 			center: 'title',
 			right: 'month,agendaWeek,agendaDay'
 		},
-		defaultDate: '2015-01-01',
+		defaultDate: '2019-06-01',
 		editable: true,
 		eventLimit: true, // allow "more" link when too many events
 		events: {
-	        url: '/events',
+	        url: '/allevents',
 	        type: 'GET',
 	        error: function() {
 	            alert('there was an error while fetching events!');
@@ -353,6 +380,7 @@ $(document).ready(function() {
 	        //textColor: 'white' // a non-ajax option
 	    }
 	});
+});
 ```
 
 #### 14. Add a query to retrieve events by date range. 
@@ -361,25 +389,31 @@ $(document).ready(function() {
 
 @RequestMapping(value="/events", method=RequestMethod.GET)
 	public List<Event> getEventsInRange(@RequestParam(value = "start", required = true) String start, 
-										@RequestParam(value = "end", required = true) String end) {
-		Date startDate = null;
-		Date endDate = null;
-		SimpleDateFormat inputDateFormat=new SimpleDateFormat("yyyy-MM-dd");
-		
-		try {
-			startDate = inputDateFormat.parse(start);
-		} catch (ParseException e) {
-			throw new BadDateFormatException("bad start date: " + start);
-		}
-		
-		try {
-			endDate = inputDateFormat.parse(end);
-		} catch (ParseException e) {
-			throw new BadDateFormatException("bad end date: " + end);
-		}
-		
-		return eventRepository.findByDatesBetween(startDate, endDate); 
+						@RequestParam(value = "end", required = true) String end) {
+	Date startDate = null;
+	Date endDate = null;
+	SimpleDateFormat inputDateFormat=new SimpleDateFormat("yyyy-MM-dd");
+
+	try {
+		startDate = inputDateFormat.parse(start);
+	} catch (ParseException e) {
+		throw new BadDateFormatException("bad start date: " + start);
 	}
+
+	try {
+		endDate = inputDateFormat.parse(end);
+	} catch (ParseException e) {
+		throw new BadDateFormatException("bad end date: " + end);
+	}
+
+	LocalDateTime startDateTime = LocalDateTime.ofInstant(startDate.toInstant(),
+	ZoneId.systemDefault());
+
+	LocalDateTime endDateTime = LocalDateTime.ofInstant(endDate.toInstant(),
+	ZoneId.systemDefault());
+
+	return eventRepository.findByDateBetween(startDateTime, endDateTime); 
+}
 ```
 
 #### 15. Add error handling when the start and end date is incorrect
@@ -450,4 +484,50 @@ public void removeEvent(@RequestBody Event event) {
 }
 ```
 #### 19. Add the javascript code to call the CRUD functions. (see the jsoncalendar.html file for more info)
+
+## Change the in-memory database to postgres
+
+Maybe you want a postgres database rather than an in memory database. Here is how...
+
+### 1. Install and start a postgres database
+
+You'll have to install and start a postgres database on the computer where you started the web application. For brevity see the postgres documentation on how to install and start a postgres database. 
+
+### 2. Make changes to your pom file
+#### 1. Add the postgres jdbc drivers to the pom file
+``` xml
+<dependency>
+	<groupId>org.postgresql</groupId>
+	<artifactId>postgresql</artifactId>
+	<scope>runtime</scope>
+</dependency>
+```
+#### 2. Remove the hsqldb from the pom file
+``` xml
+<dependency>
+	<groupId>org.hsqldb</groupId>
+	<artifactId>hsqldb</artifactId>
+	<scope>runtime</scope>
+</dependency>
+		
+```
+
+### 3. Add the following configuration to your application.properties file
+
+``` javascript
+
+spring.datasource.url=jdbc:postgresql://localhost:5432/calendar
+spring.datasource.username=postgres
+spring.datasource.password=postgres
+
+# The SQL dialect makes Hibernate generate better SQL for the chosen database
+spring.jpa.properties.hibernate.dialect = org.hibernate.dialect.PostgreSQLDialect
+
+# Hibernate ddl auto (create, create-drop, validate, update)
+spring.jpa.hibernate.ddl-auto = update
+spring.jpa.properties.hibernate.jdbc.lob.non_contextual_creation=true
+
+```
+### 4. Restart the server
+
 
