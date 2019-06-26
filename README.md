@@ -33,7 +33,7 @@ if they don't already exist from the step above
 
 #### 3. Turn off thymeleaf caching so that changes to html files will reload 
 
-add the following line to the application.properties file. (/src/main/application.properties)
+add the following line to the application.properties file. (/src/main/resources/application.properties)
 
 ``` javascript
 spring.thymeleaf.cache=false	
@@ -55,6 +55,8 @@ Hello World!
 
 #### 5. Add a controller for the index.html file
 
+This controller will give you access to the html pages from a browser. Access with the following url: http://localhost:8080/
+
 ``` java
 @Controller	
 class CalendarController {
@@ -66,67 +68,83 @@ class CalendarController {
 }
 ```
 
-#### 6. Create JPA Entity for an event
+#### 6. Create JPA Entity for an Event
+
+This entity will be used by the Java Persistence Architecture (JPA) to perform crud operations on the database. 
 
 ``` java
 @Entity
+@Table(name="event")
 class Event {
 	
-	@Id
-	@GeneratedValue(strategy=GenerationType.AUTO)
+	@Id 
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 	
-	private String title;
-	private String description; 
-	private Date start;
-	private Date end;
+	private String title; 
+	private String description;
+	private LocalDateTime start; 
+	private LocalDateTime finish;
 	
+	public Event(Long id, String title, String description, LocalDateTime start, LocalDateTime finish) {
+		super();
+		this.id = id;
+		this.title = title;
+		this.description = description;
+		this.start = start;
+		this.finish = finish;
+	}
+	
+	public Event() {
+		super();
+		// TODO Auto-generated constructor stub
+	}
+
 	public Long getId() {
 		return id;
 	}
+
 	public void setId(Long id) {
 		this.id = id;
 	}
+
 	public String getTitle() {
 		return title;
 	}
+
 	public void setTitle(String title) {
 		this.title = title;
 	}
+
 	public String getDescription() {
 		return description;
 	}
+
 	public void setDescription(String description) {
 		this.description = description;
 	}
-	public Date getStart() {
+
+	public LocalDateTime getStart() {
 		return start;
 	}
-	public void setStart(Date start) {
+
+	public void setStart(LocalDateTime start) {
 		this.start = start;
 	}
-	public Date getEnd() {
-		return end;
+
+	public LocalDateTime getFinish() {
+		return finish;
 	}
-	public void setEnd(Date end) {
-		this.end = end;
+
+	public void setFinish(LocalDateTime finish) {
+		this.finish = finish;
 	}
-	public Event(Long id, String title, String description, Date start, Date end) {
-		super();
-		this.id = id;
-		this.title = title;
-		this.description = description;
-		this.start = start;
-		this.end = end;
-	}
-	public Event() {
-		super();
-	}
+
 	@Override
 	public String toString() {
-		return "Event [id=" + id + ", title=" + title + ", description="
-				+ description + ", start=" + start + ", end=" + end + "]";
-	}
+		return "Event [id=" + id + ", title=" + title + ", description=" + description + ", start=" + start
+				+ ", finish=" + finish + "]";
+	} 	
 }
 ```
 #### 7. Build the repository
@@ -451,11 +469,16 @@ public void removeEvent(@RequestBody Event event) {
 ```
 #### 19. Add the javascript code to call the CRUD functions. (see the jsoncalendar.html file for more info)
 
-## Change the in memory database to postgres
+## Change the in-memory database to postgres
 
-Maybe you want a postgres database rather than an in memory database. Here is how
+Maybe you want a postgres database rather than an in memory database. Here is how...
 
-### 1. Add the following to the pom file
+### 1. Install and start a postgres database
+
+You'll have to install and start a postgres database on the computer where you started the web application. For brevity see the postgres documentation on how to install and start a postgres database. 
+
+### 2. Make changes to your pom file
+#### 1. Add the postgres jdbc drivers to the pom file
 ``` xml
 <dependency>
 	<groupId>org.postgresql</groupId>
@@ -463,7 +486,17 @@ Maybe you want a postgres database rather than an in memory database. Here is ho
 	<scope>runtime</scope>
 </dependency>
 ```
-### 2. Add the following to you application.properties file
+#### 2. Remove the hsqldb from the pom file
+``` xml
+<dependency>
+	<groupId>org.hsqldb</groupId>
+	<artifactId>hsqldb</artifactId>
+	<scope>runtime</scope>
+</dependency>
+		
+```
+
+### 3. Add the following configuration to your application.properties file
 
 ``` javascript
 
@@ -479,7 +512,6 @@ spring.jpa.hibernate.ddl-auto = update
 spring.jpa.properties.hibernate.jdbc.lob.non_contextual_creation=true
 
 ```
-### 3. Install and start a postgres database
+### 4. Restart the server
 
-You'll have to start a postgres database on the computer where you started the web application. 
 
