@@ -451,3 +451,35 @@ public void removeEvent(@RequestBody Event event) {
 ```
 #### 19. Add the javascript code to call the CRUD functions. (see the jsoncalendar.html file for more info)
 
+## Change the in memory database to postgres
+
+Maybe you want a postgres database rather than an in memory database. Here is how
+
+### 1. Add the following to the pom file
+``` xml
+<dependency>
+	<groupId>org.postgresql</groupId>
+	<artifactId>postgresql</artifactId>
+	<scope>runtime</scope>
+</dependency>
+```
+### 2. Add the following to you application.properties file
+
+``` javascript
+
+spring.datasource.url=jdbc:postgresql://localhost:5432/calendar
+spring.datasource.username=postgres
+spring.datasource.password=postgres
+
+# The SQL dialect makes Hibernate generate better SQL for the chosen database
+spring.jpa.properties.hibernate.dialect = org.hibernate.dialect.PostgreSQLDialect
+
+# Hibernate ddl auto (create, create-drop, validate, update)
+spring.jpa.hibernate.ddl-auto = update
+spring.jpa.properties.hibernate.jdbc.lob.non_contextual_creation=true
+
+```
+### 3. Install and start a postgres database
+
+You'll have to start a postgres database on the computer where you started the web application. 
+
