@@ -10,6 +10,8 @@ This project uses Spring Tool Suite for development with spring-boot installed.
 
 All methods have been added inline to the Application file. (/src/com/sanoy/CalendarApplication)
 
+Note that the code in the repository has the end product of the work in this tutorial. 
+
 ## Instructions
 
 ### Install Spring Dev tools
@@ -200,7 +202,7 @@ insert into event(id, title, start, end, description) values (4, 'event4', '2015
 
 ```
 	
-#### 10.	Build the Rest controller to provide a list of Events
+#### 10. Build the Rest controller to provide a list of Events
 
 ``` java
 @RestController
@@ -216,7 +218,7 @@ class EventController {
 }
 ```
 
-#### 11. 	Add the webjars for fullcalendar, moment, jquery to the pom.xml file. 
+#### 11. Add the webjars for fullcalendar, moment, jquery to the pom.xml file. 
 
 ``` xml
 		<dependency>
@@ -241,7 +243,7 @@ class EventController {
 		</dependency>
 ```
 
-#### 12.	Add the calendar.html file.
+#### 12. Add the calendar.html file.
 
 ``` html
 
@@ -358,17 +360,18 @@ $(document).ready(function() {
 #### 13. Change the js code within the calendar.html file to load the Events from the rest interface. 
 
 ``` javascript
+	$(document).ready(function() {
 	$('#calendar').fullCalendar({
 		header: {
 			left: 'prev,next today',
 			center: 'title',
 			right: 'month,agendaWeek,agendaDay'
 		},
-		defaultDate: '2015-01-01',
+		defaultDate: '2019-06-01',
 		editable: true,
 		eventLimit: true, // allow "more" link when too many events
 		events: {
-	        url: '/events',
+	        url: '/allevents',
 	        type: 'GET',
 	        error: function() {
 	            alert('there was an error while fetching events!');
@@ -377,6 +380,7 @@ $(document).ready(function() {
 	        //textColor: 'white' // a non-ajax option
 	    }
 	});
+});
 ```
 
 #### 14. Add a query to retrieve events by date range. 
@@ -385,25 +389,31 @@ $(document).ready(function() {
 
 @RequestMapping(value="/events", method=RequestMethod.GET)
 	public List<Event> getEventsInRange(@RequestParam(value = "start", required = true) String start, 
-										@RequestParam(value = "end", required = true) String end) {
-		Date startDate = null;
-		Date endDate = null;
-		SimpleDateFormat inputDateFormat=new SimpleDateFormat("yyyy-MM-dd");
-		
-		try {
-			startDate = inputDateFormat.parse(start);
-		} catch (ParseException e) {
-			throw new BadDateFormatException("bad start date: " + start);
-		}
-		
-		try {
-			endDate = inputDateFormat.parse(end);
-		} catch (ParseException e) {
-			throw new BadDateFormatException("bad end date: " + end);
-		}
-		
-		return eventRepository.findByDatesBetween(startDate, endDate); 
+						@RequestParam(value = "end", required = true) String end) {
+	Date startDate = null;
+	Date endDate = null;
+	SimpleDateFormat inputDateFormat=new SimpleDateFormat("yyyy-MM-dd");
+
+	try {
+		startDate = inputDateFormat.parse(start);
+	} catch (ParseException e) {
+		throw new BadDateFormatException("bad start date: " + start);
 	}
+
+	try {
+		endDate = inputDateFormat.parse(end);
+	} catch (ParseException e) {
+		throw new BadDateFormatException("bad end date: " + end);
+	}
+
+	LocalDateTime startDateTime = LocalDateTime.ofInstant(startDate.toInstant(),
+	ZoneId.systemDefault());
+
+	LocalDateTime endDateTime = LocalDateTime.ofInstant(endDate.toInstant(),
+	ZoneId.systemDefault());
+
+	return eventRepository.findByDateBetween(startDateTime, endDateTime); 
+}
 ```
 
 #### 15. Add error handling when the start and end date is incorrect
