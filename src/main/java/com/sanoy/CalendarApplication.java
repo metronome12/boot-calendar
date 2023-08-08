@@ -20,6 +20,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.stereotype.Repository;
 import org.springframework.ui.Model;
@@ -175,19 +176,19 @@ class EventController {
 	}
 	
 	@RequestMapping(value="/event", method=RequestMethod.POST)
-	public Event addEvent(@RequestBody Event event) {
-		Event created = eventRepository.save(event);
-		return created; 
+	public ResponseEntity<Event> addEvent(@RequestBody Event event) {
+		return ResponseEntity.ok(eventRepository.save(event));
 	}
 
 	@RequestMapping(value="/event", method=RequestMethod.PATCH)
-	public Event updateEvent(@RequestBody Event event) {
-		return eventRepository.save(event);
+	public ResponseEntity<Event> updateEvent(@RequestBody Event event) {
+		return ResponseEntity.ok(eventRepository.save(event));
 	}
 
 	@RequestMapping(value="/event", method=RequestMethod.DELETE)
-	public void removeEvent(@RequestBody Event event) {
+	public ResponseEntity<Void> removeEvent(@RequestBody Event event) {
 		eventRepository.delete(event);
+		return ResponseEntity.noContent().build();
 	}
 	
 	@RequestMapping(value="/events", method=RequestMethod.GET)
